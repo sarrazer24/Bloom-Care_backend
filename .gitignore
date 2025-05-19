@@ -1,0 +1,14 @@
+# Ignore build output
+/target/
+
+# Ignore environment files
+.env
+
+# Ignore IDE files
+*.iml
+.idea/
+.vscode/
+
+# Ignore sensitive config
+src/main/resources/application.properties
+target/
