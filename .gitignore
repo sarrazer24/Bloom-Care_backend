@@ -10,4 +10,5 @@
 .vscode/
 
 # Ignore sensitive config
+src/main/resources/application-local.properties
 target/

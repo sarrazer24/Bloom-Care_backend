@@ -2,9 +2,12 @@ package com.creche.service;
 
 import com.creche.model.User;
 import com.creche.repository.UserRepository;
+import com.creche.dto.SignupRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class UserService {
@@ -14,27 +17,44 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User registerUser(String username, String password, String role) {
-        if (userRepository.findByUsername(username) != null) {
-            throw new RuntimeException("Username already exists");
+    // For admin-created users (not parent self-registration)
+    public User registerUser(String nom, String email, String motDePasse, String role, String telephone) {
+        if (userRepository.findByEmail(email) != null) {
+            throw new RuntimeException("Email déjà utilisé.");
         }
         User user = new User();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
+        user.setNom(nom);
+        user.setEmail(email);
+        user.setMotDePasse(passwordEncoder.encode(motDePasse));
         user.setRole(role);
+        user.setTelephone(telephone); // <-- Add this line
+        user.setDateCreation(LocalDateTime.now());
         return userRepository.save(user);
     }
 
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    // For /signup (parent self-registration)
+    public User registerParent(SignupRequest request) {
+        if (userRepository.findByEmail(request.getEmail()) != null) {
+            throw new RuntimeException("Email déjà utilisé.");
+        }
+        User user = new User();
+        user.setNom(request.getNom());
+        user.setEmail(request.getEmail());
+        user.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
+        user.setRole("PARENT");
+        user.setTelephone(request.getTelephone()); // <-- Add this line
+        user.setDateCreation(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     public boolean checkPassword(User user, String rawPassword) {
-        // Utilisation sécurisée du PasswordEncoder pour vérifier le mot de passe
-        return passwordEncoder.matches(rawPassword, user.getPassword());
+        return passwordEncoder.matches(rawPassword, user.getMotDePasse());
     }
 
-    // Vérifie si l'utilisateur a un rôle spécifique
     public boolean hasRole(User user, String role) {
         return user.getRole() != null && user.getRole().equalsIgnoreCase(role);
     }

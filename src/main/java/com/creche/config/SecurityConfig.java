@@ -22,14 +22,10 @@ public class SecurityConfig {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/auth/register").permitAll()
+                .antMatchers("/auth/signup", "/auth/login").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin()
-                .permitAll()
-                .and()
-                .logout()
-                .permitAll();
+                .formLogin().disable();
 
         return http.build();
     }

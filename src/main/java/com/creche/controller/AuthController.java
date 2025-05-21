@@ -6,6 +6,11 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.creche.dto.SignupRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 @RestController
 @RequestMapping("/auth")
@@ -13,12 +18,15 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
-    // Sign up (register)
+    // Admin creates any user (except parent self-registration)
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        if (request.getRole().equalsIgnoreCase("PARENT")) {
+            return ResponseEntity.badRequest().body("Utilisez /signup pour l'inscription des parents.");
+        }
         try {
-            userService.registerUser(request.getUsername(), request.getPassword(), request.getRole());
-            return ResponseEntity.ok("User registered successfully");
+            userService.registerUser(request.getNom(), request.getEmail(), request.getMotDePasse(), request.getRole());
+            return ResponseEntity.ok("Utilisateur créé avec succès");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -26,28 +34,54 @@ public class AuthController {
 
     // Login (auth)
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        User user = userService.findByUsername(request.getUsername());
-        if (user == null) {
-            return ResponseEntity.status(401).body("Invalid username or password");
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        User user = userService.findByEmail(request.getEmail());
+        if (user == null || !userService.checkPassword(user, request.getMotDePasse())) {
+            return ResponseEntity.status(401).body("Email ou mot de passe invalide");
         }
-        if (!userService.checkPassword(user, request.getPassword())) {
-            return ResponseEntity.status(401).body("Invalid username or password");
+        return ResponseEntity.ok(new LoginResponse(user.getNom(), user.getRole()));
+    }
+
+    // Parent self-registration
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
+        if (!request.getRole().equalsIgnoreCase("PARENT")) {
+            return ResponseEntity.badRequest().body("Seuls les parents peuvent s’inscrire eux-mêmes.");
         }
-        // You can return a token or user info here as needed
-        return ResponseEntity.ok("Login successful");
+        try {
+            userService.registerParent(request);
+            return ResponseEntity.ok("Inscription réussie !");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @Data
     public static class RegisterRequest {
-        private String username;
-        private String password;
+        @NotBlank
+        private String nom;
+        @NotBlank
+        @Email
+        private String email;
+        @NotBlank
+        @Size(min = 6)
+        private String motDePasse;
+        @NotBlank
         private String role;
     }
 
     @Data
     public static class LoginRequest {
-        private String username;
-        private String password;
+        @NotBlank
+        @Email
+        private String email;
+        @NotBlank
+        private String motDePasse;
+    }
+
+    @Data
+    public static class LoginResponse {
+        private final String nom;
+        private final String role;
     }
 }
