@@ -13,9 +13,7 @@ public class WebConfig {
                 registry.addMapping("/**")
                         .allowedOrigins(
                             "http://localhost:5173",
-                            "https://ton-frontend-deployé.com",
-                            "https://bloom-care-frontend.onrender.com" // <-- Ajoute ici l'URL de ton front déployé si besoin
-                        )
+                            )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
