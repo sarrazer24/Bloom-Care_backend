@@ -73,7 +73,7 @@ public class AuthController {
         String token = UUID.randomUUID().toString();
         userService.createPasswordResetToken(user, token);
 
-        String resetLink = "http://localhost/reset-password?token=" + token;
+        String resetLink = "http://localhost:5173/reset-password?token=" + token;
         userService.sendResetEmail(user.getEmail(), resetLink);
 
         return ResponseEntity.ok("Un lien de réinitialisation a été envoyé à votre adresse email.");
