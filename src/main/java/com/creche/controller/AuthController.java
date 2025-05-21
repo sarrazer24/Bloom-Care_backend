@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
@@ -62,6 +63,36 @@ public class AuthController {
         }
     }
 
+    // Request password reset (send email)
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("Aucun utilisateur avec cet email.");
+        }
+        String token = UUID.randomUUID().toString();
+        userService.createPasswordResetToken(user, token);
+
+        String resetLink = "http://localhost/reset-password?token=" + token;
+        userService.sendResetEmail(user.getEmail(), resetLink);
+
+        return ResponseEntity.ok("Un lien de réinitialisation a été envoyé à votre adresse email.");
+    }
+
+    // Reset password
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body("Les mots de passe ne correspondent pas.");
+        }
+        boolean result = userService.resetPassword(request.getToken(), request.getNewPassword());
+        if (result) {
+            return ResponseEntity.ok("Mot de passe réinitialisé avec succès.");
+        } else {
+            return ResponseEntity.badRequest().body("Lien invalide ou expiré.");
+        }
+    }
+
     @Data
     public static class RegisterRequest {
         @NotBlank
@@ -92,5 +123,16 @@ public class AuthController {
     public static class LoginResponse {
         private final String nom;
         private final String role;
+    }
+
+    // DTO for reset password
+    @Data
+    public static class ResetPasswordRequest {
+        @NotBlank
+        private String token;
+        @NotBlank
+        private String newPassword;
+        @NotBlank
+        private String confirmPassword;
     }
 }

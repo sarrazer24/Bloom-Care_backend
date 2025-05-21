@@ -22,7 +22,12 @@ public class SecurityConfig {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/auth/signup", "/auth/login").permitAll()
+                .antMatchers(
+                        "/auth/signup",
+                        "/auth/login",
+                        "/auth/forgot-password",
+                        "/auth/reset-password")
+                .permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().disable();

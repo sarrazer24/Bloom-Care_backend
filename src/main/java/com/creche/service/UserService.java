@@ -1,6 +1,8 @@
 package com.creche.service;
 
+import com.creche.model.PasswordResetToken;
 import com.creche.model.User;
+import com.creche.repository.PasswordResetTokenRepository;
 import com.creche.repository.UserRepository;
 import com.creche.dto.SignupRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,12 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private PasswordResetTokenRepository tokenRepository;
+
+    @Autowired
+    private org.springframework.mail.javamail.JavaMailSender mailSender;
 
     // For admin-created users (not parent self-registration)
     public User registerUser(String nom, String email, String motDePasse, String role, String telephone) {
@@ -57,5 +65,36 @@ public class UserService {
 
     public boolean hasRole(User user, String role) {
         return user.getRole() != null && user.getRole().equalsIgnoreCase(role);
+    }
+
+    // Create a password reset token for a user
+    public void createPasswordResetToken(User user, String token) {
+        PasswordResetToken prt = new PasswordResetToken();
+        prt.setUser(user);
+        prt.setToken(token);
+        prt.setExpiry(LocalDateTime.now().plusHours(1));
+        tokenRepository.save(prt);
+    }
+
+    // Send the reset email
+    public void sendResetEmail(String to, String link) {
+        org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Réinitialisation du mot de passe");
+        message.setText("Cliquez sur ce lien pour réinitialiser votre mot de passe : " + link);
+        mailSender.send(message);
+    }
+
+    // Reset the password using the token
+    public boolean resetPassword(String token, String newPassword) {
+        PasswordResetToken prt = tokenRepository.findByToken(token);
+        if (prt == null || prt.getExpiry().isBefore(java.time.LocalDateTime.now())) {
+            return false;
+        }
+        User user = prt.getUser();
+        user.setMotDePasse(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        tokenRepository.delete(prt);
+        return true;
     }
 }
