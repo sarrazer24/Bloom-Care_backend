@@ -10,6 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import javax.mail.MessagingException;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import javax.mail.internet.MimeMessage;
 
 @Service
 public class UserService {
@@ -78,11 +81,20 @@ public class UserService {
 
     // Send the reset email
     public void sendResetEmail(String to, String link) {
-        org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Réinitialisation du mot de passe");
-        message.setText("Cliquez sur ce lien pour réinitialiser votre mot de passe : " + link);
-        mailSender.send(message);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(to);
+            helper.setSubject("Réinitialisation du mot de passe");
+            helper.setText(
+                    "<p>Cliquez sur ce lien pour réinitialiser votre mot de passe :</p>" +
+                            "<p><a href=\"" + link + "\">" + link + "</a></p>",
+                    true // enable HTML
+            );
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Erreur lors de l'envoi de l'email.");
+        }
     }
 
     // Reset the password using the token
