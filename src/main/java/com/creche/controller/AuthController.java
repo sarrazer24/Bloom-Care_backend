@@ -25,7 +25,13 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Utilisez /signup pour l'inscription des parents.");
         }
         try {
-            userService.registerUser(request.getNom(), request.getEmail(), request.getMotDePasse(), request.getRole());
+            userService.registerUser(
+                    request.getNom(),
+                    request.getEmail(),
+                    request.getMotDePasse(),
+                    request.getRole(),
+                    request.getTelephone() // <-- Add this argument
+            );
             return ResponseEntity.ok("Utilisateur créé avec succès");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -68,6 +74,9 @@ public class AuthController {
         private String motDePasse;
         @NotBlank
         private String role;
+        @NotBlank
+        @Size(min = 10, max = 20)
+        private String telephone; // <-- Add this line
     }
 
     @Data
