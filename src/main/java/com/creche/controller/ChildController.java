@@ -1,6 +1,7 @@
 package com.creche.controller;
 
 import com.creche.dto.ChildDTO;
+import com.creche.model.User;
 import com.creche.service.ChildService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -67,16 +68,49 @@ public class ChildController {
     // For staff (educateur, cuisinier, admin)
     @GetMapping
     @PreAuthorize("hasAnyRole('EDUCATEUR','CUISINIER','ADMIN')")
-    public ResponseEntity<List<ChildDTO>> getAllAcceptedChildren() {
-        return ResponseEntity.ok(childService.getAllAcceptedChildren());
+    public ResponseEntity<List<ChildDTO>> getAllChildrenByStatut(
+            @RequestParam(required = false) String statut) {
+        if (statut != null) {
+            return ResponseEntity.ok(childService.getAllChildrenByStatut(statut));
+        } else {
+            return ResponseEntity.ok(childService.getAllAcceptedChildren());
+        }
     }
 
     @GetMapping("/mine")
     @PreAuthorize("hasRole('PARENT')")
     public ResponseEntity<List<ChildDTO>> getMyChildren(
+            @RequestParam(required = false) String statut,
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
         String email = principal.getUsername();
-        com.creche.model.User parent = userRepository.findByEmail(email);
-        return ResponseEntity.ok(childService.getChildrenByUser(parent.getId()));
+        User parent = userRepository.findByEmail(email);
+        if (statut != null) {
+            return ResponseEntity.ok(childService.getChildrenByUserAndStatut(parent.getId(), statut));
+        } else {
+            return ResponseEntity.ok(childService.getChildrenByUserAllStatuts(parent.getId()));
+        }
+    }
+
+    // GET /children/all
+    @PreAuthorize("hasAnyRole('EDUCATEUR','CUISINIER','ADMIN')")
+    @GetMapping("/all")
+    public ResponseEntity<List<ChildDTO>> getAllChildren() {
+        return ResponseEntity.ok(childService.getAllChildren());
+    }
+
+    // GET /children/mine/all
+    @PreAuthorize("hasRole('PARENT')")
+    @GetMapping("/mine/all")
+    public ResponseEntity<List<ChildDTO>> getMyChildrenAll(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        String email = principal.getUsername();
+        User parent = userRepository.findByEmail(email);
+        return ResponseEntity.ok(childService.getChildrenByUserAllStatuts(parent.getId()));
+    }
+
+    @GetMapping("/user/{userId}/all")
+    @PreAuthorize("hasAnyRole('ADMIN','EDUCATEUR','CUISINIER')")
+    public ResponseEntity<List<ChildDTO>> getAllChildrenByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(childService.getChildrenByUserAllStatuts(userId));
     }
 }

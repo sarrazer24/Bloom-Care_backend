@@ -82,6 +82,24 @@ public class ChildService {
         childRepository.deleteById(id);
     }
 
+    public List<ChildDTO> getAllChildren() {
+        return childRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public List<ChildDTO> getAllChildrenByStatut(String statut) {
+        return childRepository.findByStatut(statut).stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public List<ChildDTO> getChildrenByUserAllStatuts(Long utilisateurId) {
+        return childRepository.findByUtilisateurId(utilisateurId).stream().map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<ChildDTO> getChildrenByUserAndStatut(Long utilisateurId, String statut) {
+        return childRepository.findByUtilisateurIdAndStatut(utilisateurId, statut).stream().map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     private ChildDTO toDTO(Child child) {
         ChildDTO dto = new ChildDTO();
         dto.setId(child.getId());
