@@ -16,6 +16,7 @@ import javax.validation.constraints.Size;
 import java.util.UUID;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -89,14 +90,18 @@ public class AuthController {
     // Reset password
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        System.out.println("RESET REQUEST: " + request);
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body("Les mots de passe ne correspondent pas.");
+            return ResponseEntity.badRequest().body(
+                    java.util.Collections.singletonMap("message", "Les mots de passe ne correspondent pas."));
         }
         boolean result = userService.resetPassword(request.getToken(), request.getNewPassword());
         if (result) {
-            return ResponseEntity.ok("Mot de passe réinitialisé avec succès.");
+            return ResponseEntity.ok(
+                    java.util.Collections.singletonMap("message", "Mot de passe réinitialisé avec succès."));
         } else {
-            return ResponseEntity.badRequest().body("Lien invalide ou expiré.");
+            return ResponseEntity.badRequest().body(
+                    java.util.Collections.singletonMap("message", "Lien invalide ou expiré."));
         }
     }
 
@@ -114,7 +119,7 @@ public class AuthController {
         private String role;
         @NotBlank
         @Size(min = 10, max = 20)
-        private String telephone; // <-- Add this line
+        private String telephone;
     }
 
     @Data

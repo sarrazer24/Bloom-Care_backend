@@ -100,13 +100,13 @@ public class UserService {
     // Reset the password using the token
     public boolean resetPassword(String token, String newPassword) {
         PasswordResetToken prt = tokenRepository.findByToken(token);
-        if (prt == null || prt.getExpiry().isBefore(java.time.LocalDateTime.now())) {
+        if (prt == null || prt.isExpired()) {
             return false;
         }
         User user = prt.getUser();
         user.setMotDePasse(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         tokenRepository.delete(prt);
-        return true;
+        return true; // <-- assure-toi de bien retourner true ici !
     }
 }
