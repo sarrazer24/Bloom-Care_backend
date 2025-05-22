@@ -1,24 +1,39 @@
-"use client"
+"use client";
 
-import { useState , useEffect } from "react"
-import { Clock, CalendarCheck, Utensils, SmilePlus, Palette, Music, Trees, Book, ArrowRight, Plus } from "lucide-react"
-import { Link } from "react-router-dom"
+import { useState, useEffect } from "react";
+import {
+  Clock,
+  CalendarCheck,
+  Utensils,
+  SmilePlus,
+  Palette,
+  Music,
+  Trees,
+  Book,
+  ArrowRight,
+  Plus,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 function Dashboard() {
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Simulate checking URL parameters
   useState(() => {
-    const urlParams = new URLSearchParams(window.location.search)
+    const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("registration") === "success") {
-      setShowSuccess(true)
+      setShowSuccess(true);
       // Clear the URL parameter after 5 seconds
       setTimeout(() => {
-        window.history.replaceState({}, document.title, window.location.pathname)
-        setShowSuccess(false)
-      }, 5000)
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+        setShowSuccess(false);
+      }, 5000);
     }
-  }, [])
+  }, []);
 
   const cards = [
     {
@@ -53,7 +68,7 @@ function Dashboard() {
       color: "text-pink-600",
       iconBg: "bg-pink-100",
     },
-  ]
+  ];
 
   const activities = [
     {
@@ -88,62 +103,52 @@ function Dashboard() {
       color: "text-pink-600",
       bg: "bg-pink-100",
     },
-  ]
+  ];
 
- const [children, setChildren] = useState([])
- useEffect(() => {
-  const fetchChildren = async () => {
-    try {
-      const token = localStorage.getItem("token")
-      const userId = JSON.parse(atob(token.split('.')[1])).id // extrait l'id du token
-
-      const response = await fetch(`https://bloom-care-backend.onrender.com/children/user/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
+  const [children, setChildren] = useState([]);
+  useEffect(() => {
+    const fetchChildren = async () => {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        "https://bloom-care-backend.onrender.com/children/mine/all",
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
-      })
-
-      if (!response.ok) {
-        throw new Error("Erreur lors du chargement des enfants")
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setChildren(data);
+      } else {
+        throw new Error("Erreur lors du chargement des enfants");
       }
-
-      const data = await response.json()
-
-      // Adapter les données au format attendu par le dashboard
-      const formatted = data.map(child => ({
-        id: child.id.toString(),
-        name: `${child.nom} ${child.prenom}`,
-        age: calculateAge(child.dateNaissance),
-        initials: getInitials(child.nom, child.prenom),
-        status: mapStatus(child.statut),
-        group: child.groupe || "Non attribué",
-        educator: child.educateur || "À désigner"
-      }))
-
-      setChildren(formatted)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  fetchChildren()
-}, [])
-
+    };
+    fetchChildren();
+  }, []);
 
   const getStatusBadge = (status) => {
     switch (status) {
       case "present":
-        return <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Présent</span>
+        return (
+          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+            Présent
+          </span>
+        );
       case "absent":
-        return <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">Absent</span>
+        return (
+          <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+            Absent
+          </span>
+        );
       case "pending":
         return (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">En attente</span>
-        )
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+            En attente
+          </span>
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -151,14 +156,24 @@ function Dashboard() {
       {showSuccess && (
         <div className="mb-6 rounded-md border border-green-200 bg-green-50 p-4 text-green-800">
           <div className="flex">
-            <svg className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="h-5 w-5 text-green-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             <div className="ml-3">
               <h3 className="font-medium">Inscription réussie</h3>
               <p className="mt-1 text-sm">
-                Votre enfant a été inscrit avec succès. Notre équipe examinera les informations et vous contactera
-                bientôt.
+                Votre enfant a été inscrit avec succès. Notre équipe examinera
+                les informations et vous contactera bientôt.
               </p>
             </div>
           </div>
@@ -172,8 +187,12 @@ function Dashboard() {
             EM
           </div>
           <div>
-            <h1 className="text-2xl font-medium text-gray-800">Bienvenue, Sophie!</h1>
-            <p className="text-gray-600">Voici ce qui se passe avec vos enfants aujourd'hui</p>
+            <h1 className="text-2xl font-medium text-gray-800">
+              Bienvenue, Sophie!
+            </h1>
+            <p className="text-gray-600">
+              Voici ce qui se passe avec vos enfants aujourd'hui
+            </p>
           </div>
         </div>
       </div>
@@ -183,13 +202,17 @@ function Dashboard() {
         {cards.map((card) => (
           <div key={card.title} className="rounded-lg bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between pb-2">
-              <h3 className="text-sm font-medium text-gray-700">{card.title}</h3>
+              <h3 className="text-sm font-medium text-gray-700">
+                {card.title}
+              </h3>
               <div className={`rounded-full ${card.iconBg} p-2`}>
                 <card.icon className={`h-4 w-4 ${card.color}`} />
               </div>
             </div>
             <div>
-              <div className={`text-2xl font-bold ${card.color}`}>{card.value}</div>
+              <div className={`text-2xl font-bold ${card.color}`}>
+                {card.value}
+              </div>
               <p className="text-xs text-gray-500">{card.description}</p>
             </div>
           </div>
@@ -199,7 +222,9 @@ function Dashboard() {
       {/* Recent Activities */}
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <div className="rounded-lg bg-white p-4 shadow-sm">
-          <h3 className="mb-4 text-lg font-medium text-gray-800">Activités d'aujourd'hui</h3>
+          <h3 className="mb-4 text-lg font-medium text-gray-800">
+            Activités d'aujourd'hui
+          </h3>
           <div className="space-y-4">
             {activities.map((activity, index) => (
               <div key={index} className="flex items-start">
@@ -208,10 +233,16 @@ function Dashboard() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-800">{activity.title}</h4>
-                    <span className="text-xs text-gray-500">{activity.time}</span>
+                    <h4 className="font-medium text-gray-800">
+                      {activity.title}
+                    </h4>
+                    <span className="text-xs text-gray-500">
+                      {activity.time}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-600">{activity.description}</p>
+                  <p className="text-sm text-gray-600">
+                    {activity.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -224,7 +255,9 @@ function Dashboard() {
         <div className="rounded-lg bg-white p-4 shadow-sm">
           <div className="mb-4">
             <h3 className="text-lg font-medium text-gray-800">Vos enfants</h3>
-            <p className="text-sm text-gray-600">Aperçu de tous vos enfants inscrits</p>
+            <p className="text-sm text-gray-600">
+              Aperçu de tous vos enfants inscrits
+            </p>
           </div>
           <div className="space-y-4">
             {children.map((child) => (
@@ -238,7 +271,9 @@ function Dashboard() {
                   </div>
                   <div className="ml-4">
                     <div className="flex items-center">
-                      <h4 className="font-medium text-gray-800">{child.name}</h4>
+                      <h4 className="font-medium text-gray-800">
+                        {child.name}
+                      </h4>
                       <div className="ml-2">{getStatusBadge(child.status)}</div>
                     </div>
                     <p className="text-sm text-gray-600">{child.age}</p>
@@ -248,13 +283,21 @@ function Dashboard() {
                 <div className="mt-4 flex items-center justify-between sm:mt-0">
                   {child.status !== "pending" ? (
                     <div className="mr-4 text-right">
-                      <p className="text-sm font-medium text-gray-800">{child.group}</p>
-                      <p className="text-xs text-gray-600">Éducateur: {child.educator}</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {child.group}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Éducateur: {child.educator}
+                      </p>
                     </div>
                   ) : (
                     <div className="mr-4 text-right">
-                      <p className="text-sm text-amber-600">Inscription en cours d'examen</p>
-                      <p className="text-xs text-gray-600">Nous vous contacterons bientôt</p>
+                      <p className="text-sm text-amber-600">
+                        Inscription en cours d'examen
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Nous vous contacterons bientôt
+                      </p>
                     </div>
                   )}
                   <Link
@@ -279,27 +322,9 @@ function Dashboard() {
         </div>
       </div>
     </div>
-  )
-  function calculateAge(dateString) {
-  const birthDate = new Date(dateString)
-  const ageDiff = Date.now() - birthDate.getTime()
-  const ageDate = new Date(ageDiff)
-  return `${Math.abs(ageDate.getUTCFullYear() - 1970)} ans`
-}
+  );
 
-function getInitials(nom, prenom) {
-  return `${(prenom[0] || "").toUpperCase()}${(nom[0] || "").toUpperCase()}`
-}
-
-function mapStatus(apiStatus) {
-  switch (apiStatus) {
-    case "PRESENT": return "present"
-    case "ABSENT": return "absent"
-    case "EN_ATTENTE": return "pending"
-    default: return "pending"
-  }
-}
 
 }
 
-export default Dashboard
+export default Dashboard;
