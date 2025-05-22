@@ -12,6 +12,7 @@ import DailyTracking from './compoennets/DailyTracking';
 import ChildProfile from './compoennets/ChildProfile';
 import Layout from './compoennets/Layout';
 import DashboardAdmin from './compoennets/DashbordAdmin'
+import { ChildRegistrationForm } from './compoennets/Child-registration-form';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/daily-reports" element={<DailyReports />} />
           <Route path="/daily-tracking" element={<DailyTracking />} />
           <Route path="/profile" element={<ChildProfile />} />
+          <Route path="/register-child" element={<ChildRegistrationForm />} />
         </Route>
       </Routes>
     </Router>
