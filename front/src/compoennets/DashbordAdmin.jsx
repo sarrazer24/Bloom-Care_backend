@@ -19,7 +19,6 @@ export default function DashboardAdmin() {
   });
   const [userForm, setUserForm] = useState({
     name: "",
-    prenom: "",
     phone: "",
     email: "",
     password: "",
@@ -37,6 +36,12 @@ export default function DashboardAdmin() {
   const handleUserSubmit = async (e) => {
     e.preventDefault();
 
+    const adminToken = localStorage.getItem("token");
+    if (!adminToken) {
+      alert("Token administrateur manquant. Veuillez vous reconnecter.");
+      return;
+    }
+
     if (userForm.password.length < 6) {
       alert("Le mot de passe doit contenir au moins 6 caractères.");
       return;
@@ -46,15 +51,18 @@ export default function DashboardAdmin() {
       return;
     }
 
-    const adminToken = localStorage.getItem("token");
-
     const payload = {
       nom: userForm.name,
       email: userForm.email,
       motDePasse: userForm.password,
       role: userForm.role, // Already uppercase from select
       telephone: userForm.phone,
+      // prenom is not sent
     };
+
+    console.log("Token:", adminToken);
+    console.log("Role:", localStorage.getItem("role"));
+    console.log("Payload:", payload);
 
     try {
       const response = await fetch(
@@ -87,7 +95,6 @@ export default function DashboardAdmin() {
 
       setUserForm({
         name: "",
-        prenom: "",
         phone: "",
         email: "",
         password: "",
@@ -190,15 +197,6 @@ export default function DashboardAdmin() {
                   type="text"
                   placeholder="Nom"
                   value={userForm.name}
-                  onChange={handleUserChange}
-                  required
-                  className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400"
-                />
-                <input
-                  name="prenom"
-                  type="text"
-                  placeholder="Prénom"
-                  value={userForm.prenom || ""}
                   onChange={handleUserChange}
                   required
                   className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400"
