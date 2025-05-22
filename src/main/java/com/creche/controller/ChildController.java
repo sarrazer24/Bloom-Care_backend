@@ -113,4 +113,10 @@ public class ChildController {
     public ResponseEntity<List<ChildDTO>> getAllChildrenByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(childService.getChildrenByUserAllStatuts(userId));
     }
+
+    @GetMapping("/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ChildDTO>> getPendingChildren() {
+        return ResponseEntity.ok(childService.getAllChildrenByStatut("EN_ATTENTE"));
+    }
 }
