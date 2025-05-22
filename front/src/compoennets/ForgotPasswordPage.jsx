@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Link , useNavigate} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
   e.preventDefault();

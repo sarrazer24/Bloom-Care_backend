@@ -11,7 +11,7 @@ export default function LoginPage() {
 
     const payload = {
       email: email,
-      motDePasse: password,
+      motDePasse: password, // Make sure this matches backend DTO
     };
 
     try {
