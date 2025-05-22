@@ -2,6 +2,8 @@ package com.creche.controller;
 
 import com.creche.service.UserService;
 import com.creche.model.User;
+import com.creche.security.JwtUtil;
+
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.UUID;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/auth")
@@ -19,8 +22,12 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     // Admin creates any user (except parent self-registration)
     @PostMapping("/register")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         if (request.getRole().equalsIgnoreCase("PARENT")) {
             return ResponseEntity.badRequest().body("Utilisez /signup pour l'inscription des parents.");
@@ -31,8 +38,7 @@ public class AuthController {
                     request.getEmail(),
                     request.getMotDePasse(),
                     request.getRole(),
-                    request.getTelephone() // <-- Add this argument
-            );
+                    request.getTelephone());
             return ResponseEntity.ok("Utilisateur créé avec succès");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -46,7 +52,8 @@ public class AuthController {
         if (user == null || !userService.checkPassword(user, request.getMotDePasse())) {
             return ResponseEntity.status(401).body("Email ou mot de passe invalide");
         }
-        return ResponseEntity.ok(new LoginResponse(user.getNom(), user.getRole()));
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+        return ResponseEntity.ok(new LoginResponse(user.getNom(), user.getRole(), token));
     }
 
     // Parent self-registration
@@ -123,6 +130,7 @@ public class AuthController {
     public static class LoginResponse {
         private final String nom;
         private final String role;
+        private final String token;
     }
 
     // DTO for reset password
