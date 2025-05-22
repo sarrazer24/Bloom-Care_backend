@@ -17,6 +17,9 @@ public class ChildController {
     @Autowired
     private ChildService childService;
 
+    @Autowired
+    private com.creche.repository.UserRepository userRepository;
+
     @PostMapping
     public ResponseEntity<ChildDTO> createChild(@Valid @RequestBody ChildDTO dto,
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
@@ -66,5 +69,14 @@ public class ChildController {
     @PreAuthorize("hasAnyRole('EDUCATEUR','CUISINIER','ADMIN')")
     public ResponseEntity<List<ChildDTO>> getAllAcceptedChildren() {
         return ResponseEntity.ok(childService.getAllAcceptedChildren());
+    }
+
+    @GetMapping("/mine")
+    @PreAuthorize("hasRole('PARENT')")
+    public ResponseEntity<List<ChildDTO>> getMyChildren(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        String email = principal.getUsername();
+        com.creche.model.User parent = userRepository.findByEmail(email);
+        return ResponseEntity.ok(childService.getChildrenByUser(parent.getId()));
     }
 }
