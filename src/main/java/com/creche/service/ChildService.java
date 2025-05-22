@@ -65,17 +65,17 @@ public class ChildService {
     }
 
     public ChildDTO approveChild(Long id) {
-        Child child = childRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Enfant non trouvé"));
+        Child child = childRepository.findById(id).orElseThrow();
         child.setStatut("ACCEPTE");
-        return toDTO(childRepository.save(child));
+        childRepository.save(child);
+        return toDTO(child);
     }
 
     public ChildDTO refuseChild(Long id) {
-        Child child = childRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Enfant non trouvé"));
-        child.setStatut("REFUSE");
-        return toDTO(childRepository.save(child));
+        Child child = childRepository.findById(id).orElseThrow();
+        child.setStatut("REFUSEE");
+        childRepository.save(child);
+        return toDTO(child);
     }
 
     public void deleteChild(Long id) {
