@@ -52,15 +52,50 @@ export function ChildRegistrationForm() {
   const { errors } = formState
 
   function onSubmit(data) {
-    setIsSubmitting(true)
+  setIsSubmitting(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log(data)
-      setIsSubmitting(false)
+  // Construction du body pour respecter le backend
+ const requestBody = {
+  nom: data.lastName,
+  prenom: data.firstName,
+  dateNaissance: data.dateOfBirth.toISOString().split("T")[0],
+  genre: data.gender === "male" ? "Garçon" : data.gender === "female" ? "Fille" : "Autre",
+  allergies: data.allergies ? data.allergiesDetails || "Non spécifié" : null,
+  conditionsMedicales: data.medicalConditions ? data.medicalConditionsDetails || "Non spécifié" : null,
+  besoinsSpecifiques: data.specialNeeds ? data.specialNeedsDetails || "Non spécifié" : null,
+  additionalNotes: data.additionalNotes || null,
+
+  // 👇 On ajoute cette ligne pour forcer le statut "en attente"
+  statut: "pending"
+}
+
+  fetch("https://bloom-care-backend.onrender.com/children", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`, // ou remplace avec ton token
+    },
+    body: JSON.stringify(requestBody),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Échec de l'enregistrement de l'enfant.")
+      }
+      return response.json()
+    })
+    .then((result) => {
+      console.log("Succès :", result)
       navigate("/dashboard?registration=success")
-    }, 1500)
-  }
+    })
+    .catch((error) => {
+      console.error("Erreur :", error)
+      alert("Une erreur s'est produite lors de l'enregistrement.")
+    })
+    .finally(() => {
+      setIsSubmitting(false)
+    })
+}
+
 
   // Watch checkbox values to conditionally render detail fields
   const hasAllergies = watch("allergies")

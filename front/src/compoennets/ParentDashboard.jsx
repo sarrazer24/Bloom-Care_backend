@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState , useEffect } from "react"
 import { Clock, CalendarCheck, Utensils, SmilePlus, Palette, Music, Trees, Book, ArrowRight, Plus } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -90,33 +90,45 @@ function Dashboard() {
     },
   ]
 
-  const children = [
-    {
-      id: "1",
-      name: "Emma Martin",
-      age: "3 ans",
-      initials: "EM",
-      status: "present",
-      group: "Papillons",
-      educator: "Marie Dubois",
-    },
-    {
-      id: "2",
-      name: "Lucas Martin",
-      age: "5 ans",
-      initials: "LM",
-      status: "absent",
-      group: "Lions",
-      educator: "Jean Petit",
-    },
-    {
-      id: "3",
-      name: "Sophie Martin",
-      age: "1 an",
-      initials: "SM",
-      status: "pending",
-    },
-  ]
+ const [children, setChildren] = useState([])
+ useEffect(() => {
+  const fetchChildren = async () => {
+    try {
+      const token = localStorage.getItem("token")
+      const userId = JSON.parse(atob(token.split('.')[1])).id // extrait l'id du token
+
+      const response = await fetch(`https://bloom-care-backend.onrender.com/children/user/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error("Erreur lors du chargement des enfants")
+      }
+
+      const data = await response.json()
+
+      // Adapter les données au format attendu par le dashboard
+      const formatted = data.map(child => ({
+        id: child.id.toString(),
+        name: `${child.nom} ${child.prenom}`,
+        age: calculateAge(child.dateNaissance),
+        initials: getInitials(child.nom, child.prenom),
+        status: mapStatus(child.statut),
+        group: child.groupe || "Non attribué",
+        educator: child.educateur || "À désigner"
+      }))
+
+      setChildren(formatted)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  fetchChildren()
+}, [])
+
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -268,6 +280,26 @@ function Dashboard() {
       </div>
     </div>
   )
+  function calculateAge(dateString) {
+  const birthDate = new Date(dateString)
+  const ageDiff = Date.now() - birthDate.getTime()
+  const ageDate = new Date(ageDiff)
+  return `${Math.abs(ageDate.getUTCFullYear() - 1970)} ans`
+}
+
+function getInitials(nom, prenom) {
+  return `${(prenom[0] || "").toUpperCase()}${(nom[0] || "").toUpperCase()}`
+}
+
+function mapStatus(apiStatus) {
+  switch (apiStatus) {
+    case "PRESENT": return "present"
+    case "ABSENT": return "absent"
+    case "EN_ATTENTE": return "pending"
+    default: return "pending"
+  }
+}
+
 }
 
 export default Dashboard
