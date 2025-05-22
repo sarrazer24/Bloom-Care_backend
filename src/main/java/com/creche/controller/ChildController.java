@@ -60,4 +60,11 @@ public class ChildController {
     public ResponseEntity<ChildDTO> refuseChild(@PathVariable Long id) {
         return ResponseEntity.ok(childService.refuseChild(id));
     }
+
+    // For staff (educateur, cuisinier, admin)
+    @GetMapping
+    @PreAuthorize("hasAnyRole('EDUCATEUR','CUISINIER','ADMIN')")
+    public ResponseEntity<List<ChildDTO>> getAllAcceptedChildren() {
+        return ResponseEntity.ok(childService.getAllAcceptedChildren());
+    }
 }

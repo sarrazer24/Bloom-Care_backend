@@ -37,7 +37,13 @@ public class ChildService {
     }
 
     public List<ChildDTO> getChildrenByUser(Long utilisateurId) {
-        return childRepository.findByUtilisateurId(utilisateurId)
+        return childRepository.findByUtilisateurIdAndStatut(utilisateurId, "ACCEPTE")
+                .stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    // For staff: get all accepted children
+    public List<ChildDTO> getAllAcceptedChildren() {
+        return childRepository.findByStatut("ACCEPTE")
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 

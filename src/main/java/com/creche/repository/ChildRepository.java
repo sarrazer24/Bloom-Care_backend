@@ -6,4 +6,8 @@ import java.util.List;
 
 public interface ChildRepository extends JpaRepository<Child, Long> {
     List<Child> findByUtilisateurId(Long utilisateurId);
+
+    List<Child> findByStatut(String statut);
+
+    List<Child> findByUtilisateurIdAndStatut(Long utilisateurId, String statut);
 }
