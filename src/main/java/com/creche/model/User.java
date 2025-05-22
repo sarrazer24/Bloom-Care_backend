@@ -3,6 +3,7 @@ package com.creche.model;
 import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -29,4 +30,7 @@ public class User {
 
     @Column(name = "date_creation", nullable = false, updatable = false, insertable = false)
     private LocalDateTime dateCreation;
+
+    @OneToMany(mappedBy = "utilisateur", fetch = FetchType.LAZY)
+    private List<Child> children;
 }
