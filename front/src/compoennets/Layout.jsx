@@ -65,6 +65,14 @@ function Layout() {
           etatDemande: child.etatDemande || "EN_ATTENTE",
           // For display
           fullName: `${child.nom} ${child.prenom}`.trim(),
+          initials: (child.nom?.[0] || "") + (child.prenom?.[0] || ""),
+          name: `${child.nom} ${child.prenom}`.trim(),
+          status:
+            child.statut === "ACCEPTE"
+              ? "present"
+              : child.statut === "REFUSEE"
+              ? "absent"
+              : "pending",
         }));
         setChildren(data);
         if (!selectedChild && data.length > 0) {
@@ -88,9 +96,8 @@ function Layout() {
       case "absent":
         return "bg-red-500";
       case "pending":
-        return "bg-amber-500";
       default:
-        return "bg-gray-500";
+        return "bg-amber-500";
     }
   };
 
@@ -159,8 +166,8 @@ function Layout() {
                 onClick={() => handleSelectChild(child)}
               >
                 <div
-                  className={`mr-2 h-3 w-3 rounded-full ${getDemandeColor(
-                    child.etatDemande
+                  className={`mr-2 h-3 w-3 rounded-full ${getStatusColor(
+                    child.status
                   )}`}
                 />
                 <span>

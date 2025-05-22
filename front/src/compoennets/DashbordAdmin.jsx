@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -12,6 +12,7 @@ import {
 
 export default function DashboardAdmin() {
   const [page, setPage] = useState("dashboard");
+  const [pendingChildren, setPendingChildren] = useState([]);
   const [medicalForm, setMedicalForm] = useState({
     childId: "",
     allergies: "",
@@ -24,6 +25,64 @@ export default function DashboardAdmin() {
     password: "",
     role: "",
   });
+
+  // Fetch pending children (inscriptions)
+  useEffect(() => {
+    if (page !== "pendingList") return;
+    const fetchPending = async () => {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        "https://bloom-care-backend.onrender.com/children/pending",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setPendingChildren(data);
+      } else {
+        setPendingChildren([]);
+      }
+    };
+    fetchPending();
+  }, [page]);
+
+  // Approve or refuse a child
+  const handleAction = async (childId, action) => {
+    const token = localStorage.getItem("token");
+    const res = await fetch(
+      `https://bloom-care-backend.onrender.com/children/${childId}/${
+        action === "accept" ? "approve" : "refuse"
+      }`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    if (res.ok) {
+      setPendingChildren((prev) =>
+        prev.filter((child) => child.id !== childId)
+      );
+    } else {
+      alert("Erreur lors de la mise à jour.");
+    }
+  };
+
+  // Helper for status dot
+  const getDemandeColor = (etatDemande) => {
+    switch (etatDemande) {
+      case "ACCEPTEE":
+      case "ACCEPTED":
+        return "bg-green-500";
+      case "REFUSEE":
+      case "REFUSED":
+        return "bg-red-500";
+      case "EN_ATTENTE":
+      case "PENDING":
+      default:
+        return "bg-amber-500";
+    }
+  };
 
   const handleUserChange = (e) => {
     setUserForm({ ...userForm, [e.target.name]: e.target.value });
@@ -147,6 +206,14 @@ export default function DashboardAdmin() {
             👤 Ajouter utilisateur
           </button>
           <button
+            onClick={() => setPage("pendingList")}
+            className={`text-left ${
+              page === "pendingList" ? "text-pink-500 font-semibold" : ""
+            }`}
+          >
+            📝 Liste des inscriptions
+          </button>
+          <button
             onClick={() => setPage("addMedicalFile")}
             className={`text-left ${
               page === "addMedicalFile" ? "text-pink-500 font-semibold" : ""
@@ -249,6 +316,83 @@ export default function DashboardAdmin() {
                 Ajouter
               </button>
             </form>
+          </div>
+        )}
+
+        {page === "pendingList" && (
+          <div className="w-full max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-2xl border border-pink-200">
+            <h2 className="text-3xl font-semibold text-center text-pink-600 mb-8">
+              Liste des inscriptions en attente
+            </h2>
+            {pendingChildren.length === 0 ? (
+              <div className="text-center text-gray-500 py-10">
+                Aucun enfant en attente d'approbation.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full border border-pink-100 rounded-xl">
+                  <thead>
+                    <tr className="bg-pink-50">
+                      <th className="px-4 py-3 text-left text-pink-600 font-semibold">
+                        Nom
+                      </th>
+                      <th className="px-4 py-3 text-left text-pink-600 font-semibold">
+                        Prénom
+                      </th>
+                      <th className="px-4 py-3 text-left text-pink-600 font-semibold">
+                        Parent
+                      </th>
+                      <th className="px-4 py-3 text-left text-pink-600 font-semibold">
+                        Statut
+                      </th>
+                      <th className="px-4 py-3 text-left text-pink-600 font-semibold">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingChildren.map((child) => (
+                      <tr
+                        key={child.id}
+                        className="border-b border-pink-100 hover:bg-pink-50"
+                      >
+                        <td className="px-4 py-2">{child.nom}</td>
+                        <td className="px-4 py-2">{child.prenom}</td>
+                        <td className="px-4 py-2">{child.parentEmail}</td>
+                        <td className="px-4 py-2">
+                          <span
+                            className={`inline-block h-3 w-3 rounded-full mr-2 align-middle ${getDemandeColor(
+                              child.etatDemande
+                            )}`}
+                          ></span>
+                          {child.etatDemande === "EN_ATTENTE" ||
+                          child.etatDemande === "PENDING"
+                            ? "En attente"
+                            : child.etatDemande === "ACCEPTEE" ||
+                              child.etatDemande === "ACCEPTED"
+                            ? "Acceptée"
+                            : "Refusée"}
+                        </td>
+                        <td className="px-4 py-2 space-x-2">
+                          <button
+                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-xl text-sm"
+                            onClick={() => handleAction(child.id, "accept")}
+                          >
+                            Accepter
+                          </button>
+                          <button
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-xl text-sm"
+                            onClick={() => handleAction(child.id, "refuse")}
+                          >
+                            Refuser
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

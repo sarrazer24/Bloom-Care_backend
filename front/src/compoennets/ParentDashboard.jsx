@@ -116,7 +116,19 @@ function Dashboard() {
         }
       );
       if (res.ok) {
-        const data = await res.json();
+        let data = await res.json();
+        // Map backend fields to frontend
+        data = data.map((child) => ({
+          ...child,
+          initials: (child.nom?.[0] || "") + (child.prenom?.[0] || ""),
+          name: `${child.nom} ${child.prenom}`.trim(),
+          status:
+            child.etatDemande === "ACCEPTEE"
+              ? "present"
+              : child.etatDemande === "REFUSEE"
+              ? "absent"
+              : "pending",
+        }));
         setChildren(data);
       } else {
         throw new Error("Erreur lors du chargement des enfants");
@@ -323,8 +335,6 @@ function Dashboard() {
       </div>
     </div>
   );
-
-
 }
 
 export default Dashboard;
