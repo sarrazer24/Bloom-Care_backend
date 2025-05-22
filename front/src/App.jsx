@@ -1,30 +1,41 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+import './App.css';
 import LoginPage from './compoennets/LoginPage';
 import RegisterPage from './compoennets/RegisterPage';
-import './App.css'
 import ForgotPasswordPage from './compoennets/ForgotPasswordPage';
 import ResetPasswordPage from './compoennets/ResetPasswordPage';
-import Dashboard from './compoennets/DashbordAdmin';
+import ParentDashboard from './compoennets/ParentDashboard';
+import DailyReports from './compoennets/Daily-report';
+import DailyTracking from './compoennets/DailyTracking';
+import ChildProfile from './compoennets/ChildProfile';
+import Layout from './compoennets/Layout';
+import DashboardAdmin from './compoennets/DashbordAdmin'
 
 function App() {
- 
-
   return (
     <>
     
-     <Router>
+    <Router>
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboardAdmin" element={<DashboardAdmin />} />
+        {/* Routes protégées ou nécessitant layout */}
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<ParentDashboard />} />
+          <Route path="/daily-reports" element={<DailyReports />} />
+          <Route path="/daily-tracking" element={<DailyTracking />} />
+          <Route path="/profile" element={<ChildProfile />} />
+        </Route>
       </Routes>
     </Router>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

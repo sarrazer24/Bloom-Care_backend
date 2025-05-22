@@ -7,39 +7,47 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
- 
-   
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const payload = {
-      email: email,
-      motDePasse: password,
-    };
-
-    try {
-      const response = await fetch("https://bloom-care-backend.onrender.com/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert("Connexion réussie !");
-        
-        navigate("/dashboard"); 
-      } else {
-        const errorData = await response.json();
-        alert(`Erreur: ${errorData.message || "Échec de la connexion"}`);
-      }
-    } catch (error) {
-      alert("Erreur réseau: " + error.message);
-    }
+  const payload = {
+    email: email,
+    motDePasse: password,
   };
 
+  try {
+    const response = await fetch("https://bloom-care-backend.onrender.com/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+
+      // Sauvegarder dans le localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+      localStorage.setItem("nom", data.nom);
+
+      // ✅ Redirection immédiate sans alert bloquant
+      if (data.role === "PARENT") {
+        navigate("/dashboard");
+      } else if (data.role === "ADMIN") {
+        navigate("/dashboardAdmin");
+      } else {
+        alert("Rôle inconnu, contactez l’administrateur.");
+      }
+    } else {
+      const errorData = await response.json();
+      alert(`Erreur: ${errorData.message || "Échec de la connexion"}`);
+    }
+  } catch (error) {
+    alert("Erreur réseau: " + error.message);
+  }
+};
   return (
     <div className="w-screen h-screen bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center p-4">
 

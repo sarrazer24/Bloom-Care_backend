@@ -1,18 +1,53 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link , useNavigate} from 'react-router-dom';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
+   const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    console.log(`Lien simulé : http://localhost:5173/reset-password?token=simu123`);
-    alert('Lien de réinitialisation envoyé (simulation). Vérifiez la console.');
+  // Validation simple de l'email
+  if (!email || !email.includes('@')) {
+    alert("Merci d'entrer une adresse email valide.");
+    return;
+  }
 
-    // Redirection simulée après "envoi"
-    setTimeout(() => navigate('/reset-password?token=simu123'), 1500);
-  };
+  try {
+    const url = `https://bloom-care-backend.onrender.com/auth/forgot-password?email=${encodeURIComponent(email)}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    // Lecture de la réponse en texte brut
+    const text = await response.text();
+
+    // Essayer de parser la réponse en JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { message: text }; // Si ce n’est pas du JSON, on met le texte dans message
+    }
+
+    if (response.ok) {
+      alert('Lien de réinitialisation envoyé ! Vérifiez votre boîte mail.');
+      
+    } else {
+      console.error('Erreur API :', data);
+      alert(data.message || "Erreur lors de l'envoi du lien.");
+    }
+  } catch (error) {
+    console.error('Erreur réseau ou fetch :', error);
+    alert("Une erreur est survenue. Veuillez réessayer plus tard.");
+  }
+};
+
+
 
 
   return (
@@ -50,6 +85,9 @@ export default function ForgotPasswordPage() {
           <Link to="/login" className="text-pink-500 hover:underline">
             Retour à la connexion
           </Link>
+
+
+
         </p>
       </div>
     </div>
