@@ -13,11 +13,13 @@ import ChildProfile from './compoennets/ChildProfile';
 import Layout from './compoennets/Layout';
 import DashboardAdmin from './compoennets/DashbordAdmin'
 import { ChildRegistrationForm } from './compoennets/Child-registration-form';
+import TeacherDashboard from './compoennets/TeacherDashboard';
 
 function App() {
   return (
-    <>
-    
+     
+     <>
+   
     <Router>
       <Routes>
         <Route path="/" element={<LoginPage />} />
@@ -36,7 +38,7 @@ function App() {
         </Route>
       </Routes>
     </Router>
-    </>
+   </>
   );
 }
 

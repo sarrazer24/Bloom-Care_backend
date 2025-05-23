@@ -213,15 +213,16 @@ export default function DashboardAdmin() {
           >
             📝 Liste des inscriptions
           </button>
-          <button
-            onClick={() => setPage("addMedicalFile")}
-            className={`text-left ${
-              page === "addMedicalFile" ? "text-pink-500 font-semibold" : ""
-            }`}
-          >
-            🩺 Dossier médical
-          </button>
-        </nav>
+        </nav> 
+        <button
+  onClick={() => {
+    window.location.href = "/login"; // ou useNavigate() si tu utilises react-router
+  }}
+  className="mt-auto bg-pink-400 text-white px-4 py-2 text-[20px] rounded hover:bg-pink-500 transition duration-200"
+>
+   Déconnexion
+</button>
+
       </aside>
 
       {/* Main Content */}
@@ -320,7 +321,7 @@ export default function DashboardAdmin() {
         )}
 
         {page === "pendingList" && (
-          <div className="w-full max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-2xl border border-pink-200">
+          <div className="w-full bg-white p-8 rounded-2xl shadow-2xl border border-pink-200">
             <h2 className="text-3xl font-semibold text-center text-pink-600 mb-8">
               Liste des inscriptions en attente
             </h2>
@@ -396,49 +397,7 @@ export default function DashboardAdmin() {
           </div>
         )}
 
-        {page === "addMedicalFile" && (
-          <>
-            <h2 className="text-2xl font-bold text-pink-500 mb-6">
-              Ajouter un dossier médical
-            </h2>
-            <form
-              onSubmit={handleMedicalSubmit}
-              className="space-y-6 bg-white p-6 rounded-xl shadow w-full max-w-xl"
-            >
-              <input
-                name="childId"
-                type="text"
-                placeholder="ID de l'enfant"
-                value={medicalForm.childId}
-                onChange={handleMedicalChange}
-                required
-                className="w-full p-3 border rounded-xl"
-              />
-              <input
-                name="allergies"
-                type="text"
-                placeholder="Allergies"
-                value={medicalForm.allergies}
-                onChange={handleMedicalChange}
-                className="w-full p-3 border rounded-xl"
-              />
-              <textarea
-                name="notes"
-                placeholder="Notes supplémentaires"
-                value={medicalForm.notes}
-                onChange={handleMedicalChange}
-                className="w-full p-3 border rounded-xl resize-y"
-                rows={4}
-              />
-              <button
-                type="submit"
-                className="bg-pink-500 text-white px-6 py-3 rounded-xl hover:bg-pink-600 transition"
-              >
-                Ajouter dossier
-              </button>
-            </form>
-          </>
-        )}
+        
       </main>
     </div>
   );

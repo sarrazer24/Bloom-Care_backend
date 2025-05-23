@@ -17,7 +17,7 @@ const childFormSchema = z.object({
   dateOfBirth: z.date({
     required_error: "Date of birth is required.",
   }),
-  gender: z.enum(["male", "female", "other"], {
+  gender: z.enum(["male", "female"], {
     required_error: "Please select a gender.",
   }),
   
@@ -246,18 +246,7 @@ export function ChildRegistrationForm() {
                     Female
                   </label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    id="other"
-                    value="other"
-                    className="h-4 w-4 text-blue-600"
-                    {...register("gender")}
-                  />
-                  <label htmlFor="other" className="text-sm">
-                    Other
-                  </label>
-                </div>
+                
               </div>
               {errors.gender && <p className="text-sm text-red-500">{errors.gender.message}</p>}
             </div>
@@ -364,11 +353,11 @@ export function ChildRegistrationForm() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+           disabled={isSubmitting}
+           className="w-full py-2 px-4 bg-pink-300 hover:bg-pink-400 text-white font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Submitting..." : "Register Child"}
-          </button>
+          {isSubmitting ? "Submitting..." : "Register Child"}
+       </button>
         </form>
       </div>
     </div>
