@@ -35,6 +35,10 @@ public class Child {
     @JoinColumn(name = "utilisateur_id", nullable = false)
     private User utilisateur;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "educateur_id")
+    private User educateur;
+
     @Column(nullable = false)
     private String statut = "EN_ATTENTE"; // EN_ATTENTE, ACCEPTE, REFUSE
 

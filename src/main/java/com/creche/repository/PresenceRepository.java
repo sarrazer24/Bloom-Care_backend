@@ -9,4 +9,5 @@ public interface PresenceRepository extends JpaRepository<Presence, Long> {
     List<Presence> findByDate(LocalDate date);
 
     List<Presence> findByChildIdAndDate(Long childId, LocalDate date);
+    List<Presence> findByDateAndChildIdIn(LocalDate date, List<Long> childIds);
 }

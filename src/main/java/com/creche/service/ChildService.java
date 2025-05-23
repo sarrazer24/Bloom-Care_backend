@@ -100,6 +100,13 @@ public class ChildService {
                 .collect(Collectors.toList());
     }
 
+    public List<ChildDTO> getChildrenByEducateurAndStatut(Long educateurId, String statut) {
+        return childRepository.findByEducateurId(educateurId).stream()
+                .filter(child -> statut.equals(child.getStatut()))
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     private ChildDTO toDTO(Child child) {
         ChildDTO dto = new ChildDTO();
         dto.setId(child.getId());

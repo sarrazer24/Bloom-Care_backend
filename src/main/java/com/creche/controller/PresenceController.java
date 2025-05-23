@@ -2,6 +2,8 @@ package com.creche.controller;
 
 import com.creche.model.Presence;
 import com.creche.repository.PresenceRepository;
+import com.creche.repository.ChildRepository;
+import com.creche.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,21 +19,55 @@ public class PresenceController {
     @Autowired
     private PresenceRepository presenceRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ChildRepository childRepository;
+
     @GetMapping
     @PreAuthorize("hasAnyRole('EDUCATEUR', 'PARENT')")
     public List<Presence> getPresences(
             @RequestParam LocalDate date,
             @AuthenticationPrincipal User principal) {
         String email = principal.getUsername();
-        // If parent, filter by their children
-        // If educator, return all
-        // (You need to implement user lookup and child filtering logic here)
-        return presenceRepository.findByDate(date);
+        String role = principal.getAuthorities().iterator().next().getAuthority();
+
+        if (role.contains("PARENT")) {
+            // Find parent user and their children
+            com.creche.model.User parent = userRepository.findByEmail(email);
+            List<Long> childIds = childRepository.findByUtilisateurId(parent.getId())
+                    .stream().map(c -> c.getId()).toList();
+            return presenceRepository.findByDateAndChildIdIn(date, childIds);
+        } else if (role.contains("EDUCATEUR")) {
+            // Find educateur user and their assigned children
+            com.creche.model.User educateur = userRepository.findByEmail(email);
+            List<Long> childIds = childRepository.findByEducateurId(educateur.getId())
+                    .stream().map(c -> c.getId()).toList();
+            return presenceRepository.findByDateAndChildIdIn(date, childIds);
+        } else {
+            // Default: return nothing
+            return List.of();
+        }
     }
 
     @PostMapping
     @PreAuthorize("hasRole('EDUCATEUR')")
-    public List<Presence> savePresences(@RequestBody List<Presence> presences) {
+    public List<Presence> savePresences(@RequestBody List<Presence> presences,
+            @AuthenticationPrincipal User principal) {
+        String email = principal.getUsername();
+        com.creche.model.User educateur = userRepository.findByEmail(email);
+
+        // Only allow saving presences for children assigned to this educateur
+        List<Long> allowedChildIds = childRepository.findByEducateurId(educateur.getId())
+                .stream().map(c -> c.getId()).toList();
+
+        for (Presence p : presences) {
+            if (!allowedChildIds.contains(p.getChild().getId())) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                        "Vous n'êtes pas responsable de cet enfant.");
+            }
+        }
         return presenceRepository.saveAll(presences);
     }
 }

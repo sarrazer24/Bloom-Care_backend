@@ -119,4 +119,16 @@ public class ChildController {
     public ResponseEntity<List<ChildDTO>> getPendingChildren() {
         return ResponseEntity.ok(childService.getAllChildrenByStatut("EN_ATTENTE"));
     }
+
+    // GET /children/educateur/mine
+    @PreAuthorize("hasRole('EDUCATEUR')")
+    @GetMapping("/educateur/mine")
+    public ResponseEntity<List<ChildDTO>> getMyAssignedChildren(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
+        String email = principal.getUsername();
+        User educateur = userRepository.findByEmail(email);
+        // Only accepted children
+        List<ChildDTO> children = childService.getChildrenByEducateurAndStatut(educateur.getId(), "ACCEPTE");
+        return ResponseEntity.ok(children);
+    }
 }
