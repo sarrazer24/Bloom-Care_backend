@@ -1,34 +1,38 @@
 package com.creche.security;
 
 import io.jsonwebtoken.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final String jwtSecret = "yourSecretKey"; // Use a strong secret in production
-    private final long jwtExpirationMs = 86400000; // 1 day
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
+    // Example usage in token generation and validation:
     public String generateToken(String email, String role) {
-        return Jwts.builder()
+        return io.jsonwebtoken.Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(io.jsonwebtoken.SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
-    }
-
-    public boolean validateJwtToken(String authToken) {
+    public boolean validateJwtToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            io.jsonwebtoken.Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
-        } catch (JwtException e) {
+        } catch (Exception e) {
             return false;
         }
     }
+
+    public String getEmailFromToken(String token) {
+        return io.jsonwebtoken.Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+    // ...other methods...
 }
