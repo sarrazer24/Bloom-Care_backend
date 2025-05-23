@@ -73,7 +73,7 @@ public class ChildService {
 
     public ChildDTO refuseChild(Long id) {
         Child child = childRepository.findById(id).orElseThrow();
-        child.setStatut("REFUSEE");
+        child.setStatut("REFUSE");
         childRepository.save(child);
         return toDTO(child);
     }

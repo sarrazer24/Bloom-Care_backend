@@ -55,17 +55,14 @@ public class PresenceController {
     @PreAuthorize("hasRole('EDUCATEUR')")
     public List<Presence> savePresences(@RequestBody List<Presence> presences,
             @AuthenticationPrincipal User principal) {
-        String email = principal.getUsername();
-        com.creche.model.User educateur = userRepository.findByEmail(email);
-
-        // Only allow saving presences for children assigned to this educateur
-        List<Long> allowedChildIds = childRepository.findByEducateurId(educateur.getId())
+        // Allow marking presence for any accepted child
+        List<Long> allowedChildIds = childRepository.findByStatut("ACCEPTE")
                 .stream().map(c -> c.getId()).toList();
 
         for (Presence p : presences) {
             if (!allowedChildIds.contains(p.getChild().getId())) {
                 throw new org.springframework.security.access.AccessDeniedException(
-                        "Vous n'êtes pas responsable de cet enfant.");
+                        "Cet enfant n'est pas accepté.");
             }
         }
         return presenceRepository.saveAll(presences);
