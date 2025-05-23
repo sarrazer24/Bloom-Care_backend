@@ -40,9 +40,8 @@ public class PresenceController {
                     .stream().map(c -> c.getId()).toList();
             return presenceRepository.findByDateAndChildIdIn(date, childIds);
         } else if (role.contains("EDUCATEUR")) {
-            // Find educateur user and their assigned children
-            com.creche.model.User educateur = userRepository.findByEmail(email);
-            List<Long> childIds = childRepository.findByEducateurId(educateur.getId())
+            // Return all presences for accepted children (since only one educateur)
+            List<Long> childIds = childRepository.findByStatut("ACCEPTE")
                     .stream().map(c -> c.getId()).toList();
             return presenceRepository.findByDateAndChildIdIn(date, childIds);
         } else {
