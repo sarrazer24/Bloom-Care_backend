@@ -123,11 +123,9 @@ public class ChildController {
     // GET /children/educateur/mine
     @PreAuthorize("hasRole('EDUCATEUR')")
     @GetMapping("/educateur/mine")
-    public ResponseEntity<List<ChildDTO>> getMyAssignedChildren(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal) {
-        String email = principal.getUsername();
-        User educateur = userRepository.findByEmail(email);
-        List<ChildDTO> children = childService.getChildrenByEducateurAndStatut(educateur.getId(), "ACCEPTE");
+    public ResponseEntity<List<ChildDTO>> getMyAssignedChildren() {
+        // Return all accepted children, since there is only one educateur
+        List<ChildDTO> children = childService.getAllChildrenByStatut("ACCEPTE");
         return ResponseEntity.ok(children);
     }
 }
