@@ -28,8 +28,20 @@ public class PresenceController {
     @GetMapping
     @PreAuthorize("hasAnyRole('EDUCATEUR', 'PARENT')")
     public List<Presence> getPresences(
-            @RequestParam LocalDate date,
+            @RequestParam(required = false) String date,
             @AuthenticationPrincipal User principal) {
+        if (principal == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Utilisateur non authentifié.");
+        }
+        if (date == null) {
+            throw new IllegalArgumentException("Date manquante");
+        }
+        LocalDate localDate;
+        try {
+            localDate = LocalDate.parse(date);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Format de date invalide, attendu: YYYY-MM-DD");
+        }
         String email = principal.getUsername();
         String role = principal.getAuthorities().iterator().next().getAuthority();
 
@@ -38,12 +50,12 @@ public class PresenceController {
             com.creche.model.User parent = userRepository.findByEmail(email);
             List<Long> childIds = childRepository.findByUtilisateurId(parent.getId())
                     .stream().map(c -> c.getId()).toList();
-            return presenceRepository.findByDateAndChildIdIn(date, childIds);
+            return presenceRepository.findByDateAndChildIdIn(localDate, childIds);
         } else if (role.contains("EDUCATEUR")) {
             // Return all presences for accepted children (since only one educateur)
             List<Long> childIds = childRepository.findByStatut("ACCEPTE")
                     .stream().map(c -> c.getId()).toList();
-            return presenceRepository.findByDateAndChildIdIn(date, childIds);
+            return presenceRepository.findByDateAndChildIdIn(localDate, childIds);
         } else {
             // Default: return nothing
             return List.of();

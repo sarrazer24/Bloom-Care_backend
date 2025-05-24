@@ -4,6 +4,7 @@ import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "presences")
@@ -15,6 +16,8 @@ public class Presence {
 
     @ManyToOne
     @JoinColumn(name = "child_id", nullable = false)
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "utilisateur", "educateur", "statut",
+            "dateNaissance", "allergies", "besoinsSpecifiques", "conditionsMedicales", "additionalNotes" })
     private Child child;
 
     private LocalDate date;
